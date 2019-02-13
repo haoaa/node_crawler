@@ -48,24 +48,23 @@ async function singePage(categoryName, url) {
   if(!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath)
   }
-  doms.each(function(idx, element) {
+  doms.each(async function(idx, element) {
     var $element = $(element);
     var $subElement = $element.find('img');
     var thumbImgSrc = $subElement.attr('src');
     let match = thumbImgSrc.match(/.*\/(\w+\.\w+)$/)
     let fileName = match ? match[1] : 'undefine.jpg'
-    superagent.get(thumbImgSrc).end(function(err, sres) {
-      try {
-        fs.writeFileSync(path.resolve(__dirname + '/pic/' + categoryName ,fileName), sres.body)
-      } catch (error) {
-        console.log(`${categoryName} ${thumbImgSrc} 下载出错 ${error}`);
-      }
-    })
+    try {
+      let data = await superagent.get(thumbImgSrc)
+      data && fs.writeFileSync(path.resolve(__dirname + '/pic/' + categoryName ,fileName), data.body)
+    } catch (error) {
+      console.log(`${categoryName} ${thumbImgSrc} 下载出错 ${error}`);
+    }
   });
   return doms.length
 }
 
 
 // getSubTypes('测试', '/tx/nvshengtx_202.html')
-// getAvatars()
+getAvatars()
 module.exports = getAvatars
