@@ -1,11 +1,5 @@
-.DS_Store
 node_modules/
-dist/
 npm-debug.log
-yarn-error.log
-test/unit/coverage
-/.idea/
-/.vscode/
 npm-debug.*
+yarn-error.log
 package-lock.json
-jsconfig.json
