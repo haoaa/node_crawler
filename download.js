@@ -66,6 +66,6 @@ async function singePage(categoryName, url) {
 }
 
 
-//getSubTypes('测试', '/tx/vzcsdtx_1.html')
-getAvatars()
+// getSubTypes('测试', '/tx/nvshengtx_202.html')
+// getAvatars()
 module.exports = getAvatars
