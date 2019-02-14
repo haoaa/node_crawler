@@ -15,6 +15,12 @@
       "request": "launch",
       "name": "download Program",
       "program": "${workspaceFolder}\\download.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "crawler",
+      "program": "${workspaceFolder}\\crawler.js"
     }
   ]
 }
