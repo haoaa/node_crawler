@@ -5,6 +5,7 @@
 let {chromePath} = require('./config')
 const puppeteer = require('puppeteer')
 const shareTargetPath = 'http://blogread.cn/news/submit.php';
+const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=news&ct=0&clk=sortbytime';
 
 (async () => {
   try {
@@ -19,26 +20,65 @@ const shareTargetPath = 'http://blogread.cn/news/submit.php';
     await page.goto(shareTargetPath, {
       waitUntil: 'networkidle2' //等待页面不动了，说明加载完毕了
     });
-    await page.waitForSelector('img')  //异步的，等待元素加载之后，否则获取不到异步加载的元素
+    await page.waitFor(() => {
+      return document.querySelector('img') !== null
+    })  //异步的，等待元素加载之后，否则获取不到异步加载的元素
     await loginWeibo(page)
-    await browser.close()
+    const page2 = await browser.newPage();
+    await page2.goto(news, {
+      waitUntil: 'networkidle2' //等待页面不动了，说明加载完毕了
+    });
+    // let a = await page.content()
+    let repoList = await page2.evaluate(() => {
+      let links = []
+      let list = Array.from(document.querySelectorAll('.result'))
+      list.forEach(a=> {
+        let link = a.querySelector('.c-title a')
+        let title = link.textContent.trim()
+        let href = link.href
+        let intro = a.querySelector('.c-summary')
+        intro.removeChild(intro.querySelector('span'))
+        intro.removeChild(intro.querySelector('p'))
+        intro = intro.innerText.trim()
+        links.push({
+          title,
+          href,
+          intro
+        })
+      })
+      return links
+    })
+    await page2.close()
+    if (repoList.length) {
+      await page.waitFor(() => {
+        return document.querySelector('#urlUrl') !== null
+      })
+      await page.focus('#textTitle')
+      await page.type('#textTitle', repoList[1].title, { delay: 20 })
+      await page.type('#urlUrl', repoList[1].href, { delay: 20 })
+      await page.type('#summary', repoList[1].intro, { delay: 20 })
+      // await page.click('.btn-default')
+    }
+    // await browser.close()
   } catch (error) {
     console.log(error)
+    browser.close()
   }
 })()
 
 async function loginWeibo(page) {
-  await page.evaluate(() => {
-    let link = document.querySelector('.panel-body > a')
-    link.click()
-  })
+  // await page.evaluate(() => {
+  //   let link = document.querySelector('.panel-body > a')
+  //   link.click()
+  // })
+  await page.click('.panel-body > a')
   await page.waitForSelector('#userId') 
   await page.waitFor(1000)
   await page.type('#userId', '18396050651', { delay: 20 })
   await page.type('#passwd', 'qqq111', { delay: 20 })
   
-  let loginBtn = await page.$('.WB_btn_login')
-  await loginBtn.click({delay: 20})
+  await page.waitFor(1000)
+  await page.click('.WB_btn_login')
   await page.waitFor(3000)
   await page.evaluate(() => {
     if (location.href === "https://api.weibo.com/oauth2/authorize") {
