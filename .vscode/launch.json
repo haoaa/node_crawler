@@ -7,6 +7,12 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "crawl douban",
+      "program": "${workspaceFolder}\\puppeteer\\sharePost.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Launch Program",
       "program": "${workspaceFolder}\\demo.js"
     },
@@ -15,6 +21,12 @@
       "request": "launch",
       "name": "download Program",
       "program": "${workspaceFolder}\\download.js"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "crawler",
+      "program": "${workspaceFolder}\\crawler.js"
     }
   ]
 }
