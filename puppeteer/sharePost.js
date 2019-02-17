@@ -10,10 +10,11 @@ const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=ne
 (async () => {
   try {
     const browser = await puppeteer.launch({
-      args: ['–ash-host-window-bounds=1324x768'],//不是沙箱模式
+      args: ['--window-size=1824,768'],// 
       dumpio: false,
       executablePath: chromePath,//运行Chromium或Chrome可执行文件的路径
-      headless: false //是否运行在浏览器headless模式，true为不打开浏览器执行，默认为true
+      headless: false, //是否运行在浏览器headless模式，true为不打开浏览器执行，默认为true
+      // devtools: true, 
     });
     
     const page = await browser.newPage();
@@ -36,15 +37,20 @@ const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=ne
         let link = a.querySelector('.c-title a')
         let title = link.textContent.trim()
         let href = link.href
+        debugger
         let intro = a.querySelector('.c-summary')
-        intro.removeChild(intro.querySelector('span'))
-        intro.removeChild(intro.querySelector('p'))
-        intro = intro.innerText.trim()
-        links.push({
-          title,
-          href,
-          intro
-        })
+        try {
+          intro.querySelector('.c-author') && intro.removeChild(intro.querySelector('.c-author'))
+          intro.querySelector('.c-info') && intro.removeChild(intro.querySelector('.c-info'))
+          intro = intro.innerText.trim()
+          links.push({
+            title,
+            href,
+            intro
+          })
+        } catch (error) {
+          console.log(error);
+        } 
       })
       return links
     })
@@ -57,7 +63,7 @@ const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=ne
       await page.type('#textTitle', repoList[1].title, { delay: 20 })
       await page.type('#urlUrl', repoList[1].href, { delay: 20 })
       await page.type('#summary', repoList[1].intro, { delay: 20 })
-      // await page.click('.btn-default')
+      await page.click('.btn-default')
     }
     // await browser.close()
   } catch (error) {
