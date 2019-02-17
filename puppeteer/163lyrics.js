@@ -7,15 +7,15 @@ let downloadPath =  path.resolve(__dirname, 'download');
 (async () => {
   const browser = await puppeteer.launch({
     executablePath: chromePath,
-    headless: false,
-    devtools: true
+    headless: true,
+    // devtools: true
   });
   const page = await browser.newPage();
   // 进入页面
   await page.goto('https://music.163.com/#');
 
-  // 点击搜索框拟人输入 鬼才会想起
-  const musicName = 'yellow';
+  // 点击搜索框拟人输入
+  const musicName = 'fade';
   const artist = ''
   await page.type('.txt.j-flag', musicName, {delay: 0});
 
@@ -40,7 +40,7 @@ let downloadPath =  path.resolve(__dirname, 'download');
   // 获取歌曲页面嵌套的 iframe
   await page.waitFor(2000);
   iframe = await page.frames().find(f => f.name() === 'contentFrame');
-  getMp3(iframe, page)
+  getMp3(iframe, page, ()=> browser.close())
   getLyric(iframe)
   getComments(iframe)
  
@@ -66,20 +66,28 @@ async function getLyric(iframe, fileName) {
   }
 }
 
-async function getMp3(iframe, page) {
-   // 下载歌
-   await iframe.waitForSelector('.u-btni-addply')
-   await iframe.click('.u-btni-addply')
-   let fileName = await iframe.$eval('.tit > em', e => e.textContent)
-   page.on('response',async (response) => {
-     if (response.url().endsWith('mp3')) {
-       let writerStream = fs.createWriteStream(path.resolve(downloadPath, `${fileName}.mp3`));
-       let buffer = await response.buffer()
-       writerStream.write(buffer);
-       writerStream.end();
-       console.log(`${fileName}.mp3 downloaded`);
-     }
-   })
+async function getMp3(iframe, page, done) {
+
+  page.on('response', async (response) => {
+    if (response.url().endsWith('mp3')) {
+      await iframe.waitFor(2000)
+      if (await iframe.$('.m-songpay') !== null) {
+        console.log('付费歌曲');
+        return
+      }
+      let fileName = await iframe.$eval('.tit > em', e => e.textContent)
+      let writerStream = fs.createWriteStream(path.resolve(downloadPath, `${fileName}.mp3`));
+      let buffer = await response.buffer()
+      writerStream.write(buffer);
+      writerStream.end();
+      console.log(`${fileName}.mp3 downloaded`);
+      done()
+    }
+  })
+  // 下载歌
+  await iframe.waitForSelector('.u-btni-addply')
+  await iframe.click('.u-btni-addply')
+
 }
 
 async function getComments(iframe) { 
