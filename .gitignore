@@ -6,3 +6,4 @@ package-lock.json
 pic/
 chrome-win*
 puppeteer/download/*
+.idea/
