@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "crawl douban",
-      "program": "${workspaceFolder}\\puppeteer\\163lyrics.js"
+      "program": "${workspaceFolder}\\puppeteer\\job_requirement.js"
     },
     {
       "type": "node",
