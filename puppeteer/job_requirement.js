@@ -19,7 +19,8 @@ const searchKey = '前端';
       //args: ['--window-size=600,400'],
     });
 
-
+    const user = ''
+    const pass = ''
     await login(browser, loginSite, user, pass)
 
     const page = await browser.newPage();
@@ -70,8 +71,10 @@ async function singlePages(browser, page) {
   let reqs = []
   for (var i = 0, len = links.length; i < len; i++) {
     let detail = await sendResume(browser, links[i])
-    // detail && reqs.push(detail)
+    // let jobDetail = await getJobDetail(browser, links[i])
+    // jobDetail && reqs.push(jobDetail)
   }
+  console.log(JSON.stringify(reqs))
 }
 
 async function sendResume(browser, jobLink) {
