@@ -29,5 +29,6 @@ module.exports = {
     'key-spacing': ['error', { 'align': 'colon' }],
     'eol-last': 0,
     'object-curly-spacing': 0,
+    'no-unused-expressions':['off'],
   }
 }
