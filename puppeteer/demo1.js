@@ -1,59 +1,57 @@
 let {chromePath} = require('./config')
 const puppeteer = require('puppeteer');
- 
-(async () => {
-    const browser = await puppeteer.launch({
-      executablePath: chromePath,
-      headless: false,
-    });
-    const page = await browser.newPage();
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    await page.goto('https://y.qq.com', {waitUntil: "networkidle2"});
-    await page.evaluate(() => console.log(`url is ${location.href}`));
-    await page.setViewport({width: 1310, height: 800})
-    await page.screenshot({path: './yqq.png', fullPage: true});
-    await browser.close();
-})();
-
-(async () => {
+(async() => {
   const browser = await puppeteer.launch({
     executablePath: chromePath,
-    headless: true // 不打开浏览器
-  });
-  const page = await browser.newPage();
+    headless      : false,
+  })
+  const page = await browser.newPage()
+  page.on('console', msg => console.log('PAGE LOG:', msg.text()))
+
+  await page.goto('https://y.qq.com', {waitUntil: 'networkidle2'})
+  await page.evaluate(() => console.log(`url is ${location.href}`))
+  await page.setViewport({width: 1310, height: 800})
+  await page.screenshot({path: './yqq.png', fullPage: true})
+  await browser.close()
+})();
+
+(async() => {
+  const browser = await puppeteer.launch({
+    executablePath: chromePath,
+    headless      : true // 不打开浏览器
+  })
+  const page = await browser.newPage()
 
   // 保存PDF
-  await page.goto('https://news.ycombinator.com', {waitUntil: 'networkidle2'});
-  await page.pdf({path: 'hn.pdf', format: 'A4'});
-  await browser.close();
+  await page.goto('https://news.ycombinator.com', {waitUntil: 'networkidle2'})
+  await page.pdf({path: 'hn.pdf', format: 'A4'})
+  await browser.close()
 })();
 
-
-
-(async () => {
+(async() => {
   const browser = await puppeteer.launch({
     executablePath: chromePath,
-    headless: true // 不打开浏览器
-  });
-  const page = await browser.newPage();
+    headless      : true // 不打开浏览器
+  })
+  const page = await browser.newPage()
 
-  await page.goto('https://y.qq.com');
+  await page.goto('https://y.qq.com')
   const dimensions = await page.evaluate(() => {
     debugger
     return {
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight,
+      width            : document.documentElement.clientWidth,
+      height           : document.documentElement.clientHeight,
       deviceScaleFactor: window.devicePixelRatio
-    };
-  });
+    }
+  })
 
-  console.log('Dimensions:', dimensions);
+  console.log('Dimensions:', dimensions)
 
-  await browser.close();
-})();
+  await browser.close()
+})()
 /**
- *  
+ *
 node hn.js
 See Page.pdf() for more information about creating pdfs.
 

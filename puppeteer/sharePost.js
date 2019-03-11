@@ -4,36 +4,36 @@
 
 let {chromePath} = require('./config')
 const puppeteer = require('puppeteer')
-const shareTargetPath = 'http://blogread.cn/news/submit.php';
-const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=news&ct=0&clk=sortbytime';
-
-(async () => {
+const shareTargetPath = 'http://blogread.cn/news/submit.php'
+const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=news&ct=0&clk=sortbytime'
+let browser
+(async() => {
   try {
-    const browser = await puppeteer.launch({
-      args: ['--window-size=1824,768'],// 
-      dumpio: false,
-      executablePath: chromePath,//运行Chromium或Chrome可执行文件的路径
-      headless: false, //是否运行在浏览器headless模式，true为不打开浏览器执行，默认为true
-      // devtools: true, 
-    });
-    
-    const page = await browser.newPage();
+    browser = await puppeteer.launch({
+      args          : ['--window-size=1824,768'], //
+      dumpio        : false,
+      executablePath: chromePath, // 运行Chromium或Chrome可执行文件的路径
+      headless      : false, // 是否运行在浏览器headless模式，true为不打开浏览器执行，默认为true
+      // devtools: true,
+    })
+
+    const page = await browser.newPage()
     await page.goto(shareTargetPath, {
-      waitUntil: 'networkidle2' //等待页面不动了，说明加载完毕了
-    });
+      waitUntil: 'networkidle2' // 等待页面不动了，说明加载完毕了
+    })
     await page.waitFor(() => {
       return document.querySelector('img') !== null
-    })  //异步的，等待元素加载之后，否则获取不到异步加载的元素
+    }) // 异步的，等待元素加载之后，否则获取不到异步加载的元素
     await loginWeibo(page)
-    const page2 = await browser.newPage();
+    const page2 = await browser.newPage()
     await page2.goto(news, {
-      waitUntil: 'networkidle2' //等待页面不动了，说明加载完毕了
-    });
+      waitUntil: 'networkidle2' // 等待页面不动了，说明加载完毕了
+    })
     // let a = await page.content()
     let repoList = await page2.evaluate(() => {
       let links = []
       let list = Array.from(document.querySelectorAll('.result'))
-      list.forEach(a=> {
+      list.forEach(a => {
         let link = a.querySelector('.c-title a')
         let title = link.textContent.trim()
         let href = link.href
@@ -49,8 +49,8 @@ const news = 'http://news.baidu.com/ns?word=vuejs&bs=vuejs&sr=0&cl=2&rn=20&tn=ne
             intro
           })
         } catch (error) {
-          console.log(error);
-        } 
+          console.log(error)
+        }
       })
       return links
     })
@@ -78,19 +78,19 @@ async function loginWeibo(page) {
   //   link.click()
   // })
   await page.click('.panel-body > a')
-  await page.waitForSelector('#userId') 
+  await page.waitForSelector('#userId')
   await page.waitFor(1000)
   await page.type('#userId', '18396050651', { delay: 20 })
   await page.type('#passwd', 'qqq111', { delay: 20 })
-  
+
   await page.waitFor(1000)
   await page.click('.WB_btn_login')
   await page.waitFor(3000)
   await page.evaluate(() => {
-    if (location.href === "https://api.weibo.com/oauth2/authorize") {
+    if (location.href === 'https://api.weibo.com/oauth2/authorize') {
       let auth = document.querySelector('a.WB_btn_oauth.formbtn_01')
       auth.click()
-    }    
+    }
   })
 }
 
