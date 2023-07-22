@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer')
 
 ;(async () => {
   const browser = await puppeteer.connect({
-    browserURL: '',
+    browserURL: 'http://xx',
     headless: false
   })
   let pages = await browser.pages()
@@ -14,6 +14,7 @@ const puppeteer = require('puppeteer')
   let detailPage = pages[0]
   page.on('console', msg => console.log('PAGE LOG:', msg.text()))
   let applyCount = 0
+  const skipRec = true
   async function pageOne(page, detailPage) {
     let host = 'https://www.zhipin.com'
     let sites = await page.evaluate(() => {
@@ -47,27 +48,43 @@ const puppeteer = require('puppeteer')
             info.scrollIntoView()
           }
           const chat = document.querySelector('.btn.btn-startchat')
-          if (chat && chat.innerText !== '继续沟通') {
-            chat.click()
-            suc = true
+          if (chat) {
+            if (chat.innerText !== '继续沟通') {
+              chat.click()
+              suc = true
+            } else {
+              suc = 'wait'
+            }
           }
         }
         return suc
       })
-      if (applySuccess) {
+      if (applySuccess === true) {
         applyCount++
         console.log(applyCount)
+      }
+      if (applySuccess === 'wait' && !skipRec) {
+        await detailPage.waitForTimeout(3000)
+
+        const input = await detailPage.$('.chat-input')
+        const sendBtn = await detailPage.$('.btn-v2.btn-send')
+        if (input && sendBtn) {
+          await input.type(`您好, 本人熟悉前端框架Vue。`)
+          applyCount++
+          console.log(applyCount)
+        }
       }
       await detailPage.waitForTimeout(5000)
     }
   }
   while (true) {
-    await pageOne(page, detailPage)
+    // await pageOne(page, detailPage)
     let nextPage = await page.$('.pagination-area .ui-icon-arrow-right')
     if (applyCount > 90) {
       break
     }
-    if (nextPage) {
+    const nextPageDisabled = await page.$('.pagination-area a.disabled .ui-icon-arrow-right')
+    if (nextPage && !nextPageDisabled) {
       await nextPage.click()
       await detailPage.waitForTimeout(10000)
     } else {
@@ -75,7 +92,4 @@ const puppeteer = require('puppeteer')
     }
   }
   process.exit()
-  // await page.goto('https://boss.com', {waitUntil: 'networkidle2'})
-  // await page.screenshot({path: './yqq.png', fullPage: true})
-  // await browser.close()
 })()
