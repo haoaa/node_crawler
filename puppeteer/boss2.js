@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer')
 
 ;(async () => {
   const browser = await puppeteer.connect({
-    browserURL: 'http://xx',
+    browserURL: 'http://',
     headless: false
   })
   let pages = await browser.pages()
@@ -10,13 +10,12 @@ const puppeteer = require('puppeteer')
     await browser.newPage()
   }
   pages = await browser.pages()
-  let page = pages[1]
-  let detailPage = pages[0]
+  let [page, detailPage] = pages
   page.on('console', msg => console.log('PAGE LOG:', msg.text()))
   let applyCount = 0
   const skipRec = true
   async function pageOne(page, detailPage) {
-    let host = 'https://www.zhipin.com'
+    let host = 'https://m'
     let sites = await page.evaluate(() => {
       let p = document.querySelectorAll('.job-card-wrapper')
       let sites = []
@@ -33,32 +32,37 @@ const puppeteer = require('puppeteer')
     sites = sites.map(job => {
       return host + job
     })
-    // console.log(sites)
-
+    console.log(`飞lt数量: `, sites.length)
     for (let i = 0; i < sites.length; i++) {
       const element = sites[i]
       await detailPage.goto(element)
-      await detailPage.waitForTimeout(5000)
-      const applySuccess = await detailPage.evaluate(() => {
-        let suc = false
-        const jd = document.querySelector('.job-detail')
-        if (jd.innerText.toLowerCase().includes('vue')) {
-          const info = document.querySelector('.company-info-box')
-          if (info) {
-            info.scrollIntoView()
-          }
-          const chat = document.querySelector('.btn.btn-startchat')
-          if (chat) {
-            if (chat.innerText !== '继续沟通') {
-              chat.click()
-              suc = true
-            } else {
-              suc = 'wait'
+      await detailPage.waitForTimeout(5000 + ((Math.random() * 5000) | 0))
+      let applySuccess = false
+
+      try {
+        applySuccess = await detailPage.evaluate(() => {
+          let suc = false
+          const jd = document.querySelector('.job-detail')
+          if (jd.innerText.toLowerCase().includes('vue')) {
+            const info = document.querySelector('.company-info-box')
+            if (info) {
+              info.scrollIntoView()
+            }
+            const chat = document.querySelector('.btn.btn-startchat')
+            if (chat) {
+              if (chat.innerText !== '继续沟通') {
+                chat.click()
+                suc = true
+              } else {
+                suc = 'wait'
+              }
             }
           }
-        }
-        return suc
-      })
+          return suc
+        })
+      } catch (error) {
+        console.log('详情页处理失败')
+      }
       if (applySuccess === true) {
         applyCount++
         console.log(applyCount)
@@ -69,7 +73,7 @@ const puppeteer = require('puppeteer')
         const input = await detailPage.$('.chat-input')
         const sendBtn = await detailPage.$('.btn-v2.btn-send')
         if (input && sendBtn) {
-          await input.type(`您好, 本人熟悉前端框架Vue。`)
+          await input.type(`您好          `)
           applyCount++
           console.log(applyCount)
         }
@@ -78,12 +82,14 @@ const puppeteer = require('puppeteer')
     }
   }
   while (true) {
-    // await pageOne(page, detailPage)
+    await pageOne(page, detailPage)
     let nextPage = await page.$('.pagination-area .ui-icon-arrow-right')
     if (applyCount > 90) {
-      break
+      // break
     }
-    const nextPageDisabled = await page.$('.pagination-area a.disabled .ui-icon-arrow-right')
+    const nextPageDisabled = await page.$(
+      '.pagination-area a.disabled .ui-icon-arrow-right'
+    )
     if (nextPage && !nextPageDisabled) {
       await nextPage.click()
       await detailPage.waitForTimeout(10000)
@@ -92,4 +98,7 @@ const puppeteer = require('puppeteer')
     }
   }
   process.exit()
+  // await page.goto('https://om', {waitUntil: 'networkidle2'})
+  // await page.screenshot({path: './yqq.png', fullPage: true})
+  // await browser.close()
 })()
